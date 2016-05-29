@@ -1,7 +1,7 @@
 const fs = require('fs');
 const restify = require('restify');
 const skype = require('skype-sdk');
-// const ai = require('./ai');
+const parser = require('./lib/parser');
 
 const botService = new skype.BotService({
     messaging: {
@@ -18,21 +18,8 @@ botService.on('contactAdded', (bot, data) => {
 });
 
 botService.on('personalMessage', (bot, data) => {
-    var message = `${data.content}`;
-    var reply = 'what?';
-
-    if(message == 'hello') {
-        reply = 'Oh hi there';
-    } else if(message == 'goodbye') {
-        reply = 'Bye, and see you soon';
-    } else if(message == 'help') {
-        reply = `##### Welcome to help menu. #####
-You can see the list of commmands below:
-hello - returns a greeting
-goodbye - returns a greeting`;
-    }
-
-    bot.reply(reply, true);
+    var response = parser(`${data.content}`);
+    bot.reply(response, true);
 });
 
 const server = restify.createServer();
@@ -40,5 +27,3 @@ server.post('/v1/chat', skype.messagingHandler(botService));
 const port = process.env.PORT || 8000;
 server.listen(port);
 console.log('Listening for incoming requests on port ' + port);
-
-// `Hey ${data.from}.  (hug).`
